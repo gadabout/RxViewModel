@@ -14,62 +14,57 @@ import RxSwift
 
 /**
  Throttles `next`s for which `predicate` returns `true`.
-
  When `valuesPassingTest` returns `true` for a `next`:
-
-  1. If another `next` is received before `interval` seconds have passed, the
-     prior value is discarded. This happens regardless of whether the new
-     value will be throttled.
-  2. After `interval` seconds have passed since the value was originally
-     received, it will be forwarded on the scheduler that it was received
-     upon.
-
+ 1. If another `next` is received before `interval` seconds have passed, the
+ prior value is discarded. This happens regardless of whether the new
+ value will be throttled.
+ 2. After `interval` seconds have passed since the value was originally
+ received, it will be forwarded on the scheduler that it was received
+ upon.
  When `valuesPassingTest` returns NO for a `next`, it is forwarded immediately,
  without any throttling.
-
  - parameter interval: The number of seconds for which to buffer the latest value that
-             passes `valuesPassingTest`.
+ passes `valuesPassingTest`.
  - parameter valuesPassingTest: Passed each `next` from the receiver, this closuer returns
-             whether the given value should be throttled.
-
+ whether the given value should be throttled.
  - returns: Returns a signal which sends `next` events, throttled when `predicate`
-returns `true`. Completion and errors are always forwarded immediately.
-*/
+ returns `true`. Completion and errors are always forwarded immediately.
+ */
 extension ObservableType {
-  public func throttle(interval: NSTimeInterval, valuesPassingTest predicate: (E) -> Bool) -> Observable<E> {
+  public func throttle(interval: TimeInterval, valuesPassingTest predicate: @escaping (E) -> Bool) -> Observable<E> {
     return Observable.create { (o: AnyObserver<E>) -> Disposable in
       let disposable = CompositeDisposable()
-      let scheduler = ConcurrentDispatchQueueScheduler(globalConcurrentQueueQOS: .Default)
+      let scheduler = ConcurrentDispatchQueueScheduler(qos: .default)
       let nextDisposable = SerialDisposable()
       var hasNextValue = false
       var nextValue: E?
       let parent = self.asObservable()
       
-      let subscriptionDisposable = parent.subscribeNext {
+      let subscriptionDisposable = parent.subscribe(onNext: {
         /**
-        Disposes the «last» `next` subscription if there was a previous value it gets
-        flushed to the observable `o`.
-        
-        - parameter send: 	`Bool` flag indicating where or not the `next` value should be
-        «flushed» to the `observable` `o` or not.
-        */
-        func flushNext(send: Bool) -> Void {
+         Disposes the «last» `next` subscription if there was a previous value it gets
+         flushed to the observable `o`.
+         
+         - parameter send: 	`Bool` flag indicating where or not the `next` value should be
+         «flushed» to the `observable` `o` or not.
+         */
+        func flushNext(_ send: Bool) -> Void {
           nextDisposable.dispose()
           
-          guard let nV = nextValue where hasNextValue == true && send == true
+          guard let nV = nextValue, hasNextValue == true && send == true
             else { return }
           
           nextValue = nil
           hasNextValue = false
           
-          o.on(.Next(nV))
+          o.on(.next(nV))
         }
         
         let shouldThrottle = predicate($0)
         flushNext(false)
         
         if !shouldThrottle {
-          o.on(.Next($0))
+          o.on(.next($0))
           
           return
         }
@@ -79,14 +74,14 @@ extension ObservableType {
         
         let flush = flushNext
         let d = Observable<Int64>.timer(interval, scheduler: scheduler)
-          .subscribeNext { _ in
-          flush(true)
-        }
+          .subscribe(onNext: { _ in
+            flush(true)
+          })
         
-        disposable.addDisposable(d)
-      }
+        _ = disposable.insert(d)
+      })
       
-      disposable.addDisposable(subscriptionDisposable)
+      _ = disposable.insert(subscriptionDisposable)
       
       return disposable
     }

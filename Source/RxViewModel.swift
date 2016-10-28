@@ -13,17 +13,17 @@ import Foundation
 import RxSwift
 
 /**
-Implements behaviors that drive the UI, and/or adapts a domain model to be 
-user-presentable.
-*/
-public class RxViewModel: NSObject {
+ Implements behaviors that drive the UI, and/or adapts a domain model to be
+ user-presentable.
+ */
+open class RxViewModel: NSObject {
   // MARK: Constants
-  let throttleTime: NSTimeInterval = 2
+  let throttleTime: TimeInterval = 2
   
   // MARK: Properties
   /// Scope dispose to avoid leaking
   var disposeBag = DisposeBag()
-    
+  
   /// Underlying variable that we'll listen to for changes
   private dynamic var _active: Bool = false
   
@@ -37,59 +37,57 @@ public class RxViewModel: NSObject {
       if newValue == _active { return }
       
       _active = newValue
-      self.activeObservable.on(.Next(_active))
+      self.activeObservable.on(.next(_active))
     }
   }
-   
-   // Private
-   private lazy var activeObservable: BehaviorSubject<Bool?> = {
-      let ao = BehaviorSubject(value: Bool?(self.active))
-      
-      return ao
-   }()
+  
+  // Private
+  private lazy var activeObservable: BehaviorSubject<Bool?> = {
+    let ao = BehaviorSubject(value: Bool?(self.active))
+    
+    return ao
+  }()
   
   // MARK: Life cycle
   
   /**
-  Initializes a `RxViewModel` a attaches to observe changes in the `active` flag.
-  */
+   Initializes a `RxViewModel` a attaches to observe changes in the `active` flag.
+   */
   public override init() {
     super.init()
   }
   
   /**
-  Rx `Observable` for the `active` flag. (when it becomes `true`).
-  
-  Will send messages only to *new* & *different* values.
-  */
+   Rx `Observable` for the `active` flag. (when it becomes `true`).
+   
+   Will send messages only to *new* & *different* values.
+   */
   public lazy var didBecomeActive: Observable<RxViewModel> = { [unowned self] in
     return self.activeObservable
-        .filter { $0 == true }
-        .map { _ in return self }
-  }()
+      .filter { $0 == true }
+      .map { _ in return self }
+    }()
   
   /**
-  Rx `Observable` for the `active` flag. (when it becomes `false`).
-  
-  Will send messages only to *new* & *different* values.
-  */
+   Rx `Observable` for the `active` flag. (when it becomes `false`).
+   
+   Will send messages only to *new* & *different* values.
+   */
   public lazy var didBecomeInactive: Observable<RxViewModel> = { [unowned self] in
     return self.activeObservable
-        .filter { $0 == false }
-        .map { _ in return self }
-  }()
+      .filter { $0 == false }
+      .map { _ in return self }
+    }()
   
   /**
-  Subscribes (or resubscribes) to the given signal whenever
-  `didBecomeActiveSignal` fires.
-
-  When `didBecomeInactiveSignal` fires, any active subscription to `signal` is
-  disposed.
-
-  Returns a signal which forwards `next`s from the latest subscription to
-  `signal`, and completes when the receiver is deallocated. If `signal` sends
-  an error at any point, the returned signal will error out as well.
-  */
+   Subscribes (or resubscribes) to the given signal whenever
+   `didBecomeActiveSignal` fires.
+   When `didBecomeInactiveSignal` fires, any active subscription to `signal` is
+   disposed.
+   Returns a signal which forwards `next`s from the latest subscription to
+   `signal`, and completes when the receiver is deallocated. If `signal` sends
+   an error at any point, the returned signal will error out as well.
+   */
   public func forwardSignalWhileActive<T>(observable: Observable<T>) -> Observable<T> {
     let signal = self.activeObservable
     
@@ -97,31 +95,31 @@ public class RxViewModel: NSObject {
       let disposable = CompositeDisposable()
       var signalDisposable: Disposable? = nil
       var disposeKey: Bag<Disposable>.KeyType?
-    
+      
       let activeDisposable = signal.subscribe( onNext: { active in
         if active == true {
           signalDisposable = observable.subscribe( onNext: { value in
-            o.on(.Next(value))
+            o.on(.next(value))
             }, onError: { error in
-              o.on(.Error(error))
+              o.on(.error(error))
             }, onCompleted: {})
           
-          if let sd = signalDisposable { disposeKey = disposable.addDisposable(sd) }
+          if let sd = signalDisposable { disposeKey = disposable.insert(sd) }
         } else {
           if let sd = signalDisposable {
             sd.dispose()
             if let dk = disposeKey {
-              disposable.removeDisposable(dk)
+              disposable.remove(for: dk)
             }
           }
         }
-      }, onError: { error in
-        o.on(.Error(error))
-      }, onCompleted: {
-        o.on(.Completed)
+        }, onError: { error in
+          o.on(.error(error))
+        }, onCompleted: {
+          o.on(.completed)
       })
       
-      disposable.addDisposable(activeDisposable)
+      _ = disposable.insert(activeDisposable)
       
       return disposable
     }
@@ -129,39 +127,46 @@ public class RxViewModel: NSObject {
   
   /**
    Throttles events on the given `observable` while the receiver is inactive.
-  
+   
    Unlike `forwardSignalWhileActive:`, this method will stay subscribed to
    `observable` the entire time, except that its events will be throttled when the
    receiver becomes inactive.
-  
-  - parameter observable: The `Observable` to which this method will stay 
-  subscribed the entire time.
-  
-  - returns: Returns an `observable` which forwards events from `observable` (throttled while the
-  receiver is inactive), and completes when `observable` completes or the receiver
-  is deallocated.
-  */
+   
+   - parameter observable: The `Observable` to which this method will stay
+   subscribed the entire time.
+   
+   - returns: Returns an `observable` which forwards events from `observable` (throttled while the
+   receiver is inactive), and completes when `observable` completes or the receiver
+   is deallocated.
+   */
   public func throttleSignalWhileInactive<T>(observable: Observable<T>) -> Observable<T> {
-//    observable.replay(1)
+    
     let result = ReplaySubject<T>.create(bufferSize: 1)
     
     let activeSignal = self.activeObservable.takeUntil(Observable.create { (o: AnyObserver<T>) -> Disposable in
-      observable.subscribeCompleted {
+      observable.subscribe(onCompleted: {
         defer { result.dispose() }
         
-        result.on(.Completed)
-      }
+        result.on(.completed)
+      })
     })
-
-    let _ = Observable.combineLatest(activeSignal, observable) { (active, o) -> (Bool?, T) in (active, o) }
-      .throttle(throttleTime) { (active: Bool?, value: T) -> Bool in
-      return active == false
-    }.subscribe(onNext: { (value: (Bool?, T)) in
-      result.on(.Next(value.1))
-    }, onError: { _ in }, onCompleted: {
-      result.on(.Completed)
-    })
-
+    
+    let combined = Observable.combineLatest(activeSignal, observable) { (active, o) -> (Bool?, T) in (active, o) }
+    
+    let justInactive = combined
+      .throttle(self.throttleTime, scheduler: MainScheduler.instance)
+      .filter { (active, _) in active == false }
+    
+    let justActive = combined
+      .filter { (active, _) in active != false }
+    
+    _ = Observable.of(justActive, justInactive).merge()
+      .subscribe(onNext: { (_, value: T) in
+        result.on(.next(value))
+        }, onCompleted: {
+          result.on(.completed)
+      })
+    
     return result
   }
 }
