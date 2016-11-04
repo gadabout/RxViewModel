@@ -5,7 +5,6 @@
 //  Created by Esteban Torres on 7/14/15.
 //  Copyright (c) 2015 Esteban Torres. All rights reserved.
 //
-
 // Native Frameworks
 import Foundation
 
@@ -94,15 +93,15 @@ open class RxViewModel: NSObject {
     return Observable.create { (o: AnyObserver<T>) -> Disposable in
       let disposable = CompositeDisposable()
       var signalDisposable: Disposable? = nil
-      var disposeKey: Bag<Disposable>.KeyType?
+      var disposeKey: CompositeDisposable.DisposeKey?
       
       let activeDisposable = signal.subscribe( onNext: { active in
         if active == true {
           signalDisposable = observable.subscribe( onNext: { value in
             o.on(.next(value))
-            }, onError: { error in
-              o.on(.error(error))
-            }, onCompleted: {})
+          }, onError: { error in
+            o.on(.error(error))
+          }, onCompleted: {})
           
           if let sd = signalDisposable { disposeKey = disposable.insert(sd) }
         } else {
@@ -113,13 +112,13 @@ open class RxViewModel: NSObject {
             }
           }
         }
-        }, onError: { error in
-          o.on(.error(error))
-        }, onCompleted: {
-          o.on(.completed)
+      }, onError: { error in
+        o.on(.error(error))
+      }, onCompleted: {
+        o.on(.completed)
       })
       
-      _ = disposable.insert(activeDisposable)
+      disposable.insert(activeDisposable)
       
       return disposable
     }
@@ -163,8 +162,8 @@ open class RxViewModel: NSObject {
     _ = Observable.of(justActive, justInactive).merge()
       .subscribe(onNext: { (_, value: T) in
         result.on(.next(value))
-        }, onCompleted: {
-          result.on(.completed)
+      }, onCompleted: {
+        result.on(.completed)
       })
     
     return result

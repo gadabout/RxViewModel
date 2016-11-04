@@ -5,7 +5,6 @@
 //  Created by Esteban Torres on 16/7/15.
 //  Copyright (c) 2015 Esteban Torres. All rights reserved.
 //
-
 // Native Frameworks
 import Foundation
 
@@ -34,7 +33,7 @@ extension ObservableType {
   public func throttle(interval: TimeInterval, valuesPassingTest predicate: @escaping (E) -> Bool) -> Observable<E> {
     return Observable.create { (o: AnyObserver<E>) -> Disposable in
       let disposable = CompositeDisposable()
-      let scheduler = ConcurrentDispatchQueueScheduler(qos: .default)
+      let scheduler = ConcurrentDispatchQueueScheduler(queue: DispatchQueue.global())
       let nextDisposable = SerialDisposable()
       var hasNextValue = false
       var nextValue: E?
@@ -78,10 +77,10 @@ extension ObservableType {
             flush(true)
           })
         
-        _ = disposable.insert(d)
+        disposable.insert(d)
       })
       
-      _ = disposable.insert(subscriptionDisposable)
+      disposable.insert(subscriptionDisposable)
       
       return disposable
     }
