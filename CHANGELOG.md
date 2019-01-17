@@ -1,8 +1,78 @@
 # Change Log
 
-## [Unreleased](https://github.com/RxSwiftCommunity/RxViewModel/tree/HEAD)
+## [5.1.0](https://github.com/RxSwiftCommunity/RxViewModel/tree/5.1.0) (2017-10-31)
+[Full Changelog](https://github.com/RxSwiftCommunity/RxViewModel/compare/5.0.1...5.1.0)
 
-[Full Changelog](https://github.com/RxSwiftCommunity/RxViewModel/compare/3.1.3...HEAD)
+**Fixed bugs:**
+
+- Update podspec on cocoapods repo [\#53](https://github.com/RxSwiftCommunity/RxViewModel/issues/53)
+
+**Closed issues:**
+
+- Update with RXSwift 4 [\#58](https://github.com/RxSwiftCommunity/RxViewModel/issues/58)
+- Unable to use when inherited [\#52](https://github.com/RxSwiftCommunity/RxViewModel/issues/52)
+
+**Merged pull requests:**
+
+- - fix build error [\#61](https://github.com/RxSwiftCommunity/RxViewModel/pull/61) ([AYastrebov](https://github.com/AYastrebov))
+- Support Swift 4 [\#60](https://github.com/RxSwiftCommunity/RxViewModel/pull/60) ([esttorhe](https://github.com/esttorhe))
+
+## [5.0.1](https://github.com/RxSwiftCommunity/RxViewModel/tree/5.0.1) (2017-08-15)
+[Full Changelog](https://github.com/RxSwiftCommunity/RxViewModel/compare/5.0.0...5.0.1)
+
+**Fixed bugs:**
+
+- Can't use RxSwift 3.6.1 [\#54](https://github.com/RxSwiftCommunity/RxViewModel/issues/54)
+- You should make RxViewModel class "open" [\#50](https://github.com/RxSwiftCommunity/RxViewModel/issues/50)
+
+**Merged pull requests:**
+
+- Loosen RxSwift to `~\> 3.5` instead of `~\> 3.5.0` [\#55](https://github.com/RxSwiftCommunity/RxViewModel/pull/55) ([freak4pc](https://github.com/freak4pc))
+
+## [5.0.0](https://github.com/RxSwiftCommunity/RxViewModel/tree/5.0.0) (2017-07-25)
+[Full Changelog](https://github.com/RxSwiftCommunity/RxViewModel/compare/4.1.0...5.0.0)
+
+**Merged pull requests:**
+
+- 🐛 Marks `RxViewModel` as `open` [\#51](https://github.com/RxSwiftCommunity/RxViewModel/pull/51) ([esttorhe](https://github.com/esttorhe))
+
+## [4.1.0](https://github.com/RxSwiftCommunity/RxViewModel/tree/4.1.0) (2017-07-10)
+[Full Changelog](https://github.com/RxSwiftCommunity/RxViewModel/compare/4.0.0...4.1.0)
+
+**Fixed bugs:**
+
+- Carthage fails to build [\#46](https://github.com/RxSwiftCommunity/RxViewModel/issues/46)
+
+**Closed issues:**
+
+- Update Swift 3 [\#44](https://github.com/RxSwiftCommunity/RxViewModel/issues/44)
+
+**Merged pull requests:**
+
+- 🐛 Fixes \#46 Carthage build [\#47](https://github.com/RxSwiftCommunity/RxViewModel/pull/47) ([esttorhe](https://github.com/esttorhe))
+
+## [4.0.0](https://github.com/RxSwiftCommunity/RxViewModel/tree/4.0.0) (2017-06-27)
+[Full Changelog](https://github.com/RxSwiftCommunity/RxViewModel/compare/3.1.4...4.0.0)
+
+**Implemented enhancements:**
+
+- Better Carthage support [\#16](https://github.com/RxSwiftCommunity/RxViewModel/issues/16)
+
+**Fixed bugs:**
+
+- throttleSignalWhileInactive is sending events while the receiver is inactive [\#33](https://github.com/RxSwiftCommunity/RxViewModel/issues/33)
+
+**Closed issues:**
+
+- Retain cycle [\#31](https://github.com/RxSwiftCommunity/RxViewModel/issues/31)
+
+**Merged pull requests:**
+
+- Support for Swift 3 \(and Xcode 9.2 beta 2\) 🎉 [\#45](https://github.com/RxSwiftCommunity/RxViewModel/pull/45) ([freak4pc](https://github.com/freak4pc))
+- Better performance when boostraping [\#37](https://github.com/RxSwiftCommunity/RxViewModel/pull/37) ([esttorhe](https://github.com/esttorhe))
+
+## [3.1.4](https://github.com/RxSwiftCommunity/RxViewModel/tree/3.1.4) (2016-07-08)
+[Full Changelog](https://github.com/RxSwiftCommunity/RxViewModel/compare/3.1.3...3.1.4)
 
 **Implemented enhancements:**
 
@@ -12,6 +82,11 @@
 **Fixed bugs:**
 
 - RxViewModel is depending on an old version of RxCocoa [\#29](https://github.com/RxSwiftCommunity/RxViewModel/issues/29)
+
+**Merged pull requests:**
+
+- Restructures the project. [\#36](https://github.com/RxSwiftCommunity/RxViewModel/pull/36) ([esttorhe](https://github.com/esttorhe))
+- Adds swiftlint support [\#35](https://github.com/RxSwiftCommunity/RxViewModel/pull/35) ([esttorhe](https://github.com/esttorhe))
 
 ## [3.1.3](https://github.com/RxSwiftCommunity/RxViewModel/tree/3.1.3) (2016-06-06)
 [Full Changelog](https://github.com/RxSwiftCommunity/RxViewModel/compare/3.1.2...3.1.3)
